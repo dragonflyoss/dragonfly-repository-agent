@@ -52,17 +52,17 @@ FetchContent_Declare(
   GIT_SHALLOW ON
 )
 FetchContent_Declare(
+  http-lib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG ${AWS_CORE_REPO_TAG}
+  GIT_SHALLOW ON
+)
+FetchContent_Declare(
   aws-core
   GIT_REPOSITORY https://github.com/aws/aws-sdk-cpp.git
   GIT_TAG ${AWS_CORE_REPO_TAG}
   GIT_SHALLOW ON
 )
- FetchContent_Declare(
-   http-lib
-   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-   GIT_TAG ${AWS_CORE_REPO_TAG}
-   GIT_SHALLOW ON
- )
 FetchContent_MakeAvailable(repo-common repo-core aws-core http-lib)
 
 #
@@ -105,7 +105,7 @@ target_link_libraries(
 set_target_properties(
   triton-Dragonfly-repoagent PROPERTIES
   POSITION_INDEPENDENT_CODE ON
-  OUTPUT_NAME tritonrepoagent_Dragonfly
+  OUTPUT_NAME tritonrepoagent_dragonfly
   LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libtritonrepoagent_Dragonfly.ldscript
   LINK_FLAGS "-Wl,--version-script libtritonrepoagent_Dragonfly.ldscript"
 )
@@ -118,16 +118,16 @@ set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/TritonDragonflyRepoAgent)
 
 install(
   TARGETS
-    triton-Dragonfly-repoagent
+    triton-dragonfly-repoagent
   EXPORT
-    triton-Dragonfly-repoagent-targets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/repoagents/Dragonfly
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/repoagents/Dragonfly
+    triton-dragonfly-repoagent-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/repoagents/dragonfly
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/repoagents/dragonfly
 )
 
 install(
   EXPORT
-    triton-Dragonfly-repoagent-targets
+    triton-dragonfly-repoagent-targets
   FILE
     TritonDragonflyRepoAgentTargets.cmake
   NAMESPACE
@@ -153,7 +153,7 @@ install(
 # Export from build tree
 #
 export(
-  EXPORT triton-Dragonfly-repoagent-targets
+  EXPORT triton-dragonfly-repoagent-targets
   FILE ${CMAKE_CURRENT_BINARY_DIR}/TritonDragonflyRepoAgentTargets.cmake
   NAMESPACE TritonDragonflyRepoAgent::
 )
