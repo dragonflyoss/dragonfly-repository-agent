@@ -71,31 +71,31 @@ FetchContent_MakeAvailable(repo-common repo-core aws-core http-lib)
 configure_file(src/libtritonrepoagent_dragonfly.ldscript libtritonrepoagent_dragonfly.ldscript COPYONLY)
 
 add_library(
-  triton-Dragonfly-repoagent SHARED
-  src/Dragonfly.cc
+  triton-dragonfly-repoagent SHARED
+  src/dragonfly.cc
 )
 
 add_library(
-  TritonDragonflyRepoAgent::triton-Dragonfly-repoagent ALIAS triton-Dragonfly-repoagent
+  TritonDragonflyRepoAgent::triton-dragonfly-repoagent ALIAS triton-dragonfly-repoagent
 )
 
 target_include_directories(
-  triton-Dragonfly-repoagent
+  triton-dragonfly-repoagent
   PUBLIC
     $<INSTALL_INTERFACE:include>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(triton-Dragonfly-repoagent PRIVATE cxx_std_11)
+target_compile_features(triton-dragonfly-repoagent PRIVATE cxx_std_11)
 target_compile_options(
-  triton-Dragonfly-repoagent PRIVATE
+  triton-dragonfly-repoagent PRIVATE
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
     -Wall -Wextra -Wno-unused-parameter -Wno-type-limits -Werror>
 )
 
 target_link_libraries(
-  triton-Dragonfly-repoagent
+  triton-dragonfly-repoagent
   PRIVATE
     triton-core-serverapi   # from repo-core
     triton-core-repoagentapi   # from repo-core
@@ -103,7 +103,7 @@ target_link_libraries(
 )
 
 set_target_properties(
-  triton-Dragonfly-repoagent PROPERTIES
+  triton-dragonfly-repoagent PROPERTIES
   POSITION_INDEPENDENT_CODE ON
   OUTPUT_NAME tritonrepoagent_dragonfly
   LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libtritonrepoagent_Dragonfly.ldscript
