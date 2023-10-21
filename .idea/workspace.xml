@@ -33,17 +33,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="323224ee-70ab-40a4-a04d-c2f15d219a6a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/common_utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/common_utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dragonfly.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/dragonfly.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/file_utils.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/filesystem/api.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/filesystem/api.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/filesystem/api.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/filesystem/api.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/filesystem/implementations/gcs.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/filesystem/implementations/gcs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/filesystem/implementations/s3.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/filesystem/implementations/s3.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,7 +193,7 @@
       <workItem from="1693915052232" duration="15000" />
       <workItem from="1693915280328" duration="40917000" />
       <workItem from="1694505063959" duration="7561000" />
-      <workItem from="1697880841255" duration="168000" />
+      <workItem from="1697880841255" duration="1049000" />
     </task>
     <servers />
   </component>
