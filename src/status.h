@@ -15,5 +15,4 @@ struct ErrorException {
      return rie_err__;                  \
    }                                    \
  } while (false)
-
 #endif // STATUS_H

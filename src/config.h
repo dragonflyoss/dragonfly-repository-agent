@@ -63,5 +63,4 @@ DragonflyConfig::DragonflyConfig(triton::common::TritonJson::Value& config)
     }
   }
 }
-
 }

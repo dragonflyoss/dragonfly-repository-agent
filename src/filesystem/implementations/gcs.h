@@ -319,5 +319,4 @@ GCSFileSystem::LocalizePath(
 
   return nullptr;
 }
-
 }
