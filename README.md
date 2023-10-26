@@ -1,118 +1,26 @@
 # dragonfly-repository-agent
 
+[![CI](https://github.com/dragonflyoss/dragonfly-repository-agent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dragonflyoss/dragonfly-repository-agent/actions/workflows/ci.yml)
+[![LICENSE](https://img.shields.io/github/license/dragonflyoss/Dragonfly2.svg?style=flat-square)](https://github.com/dragonflyoss/Dragonfly2/blob/main/LICENSE)
+
 The Triton repository agent that downloads model via dragonfly.
 
-## Build the Dragonfly Repository Agent
+## Documentation
 
-Use a recent cmake to build. First install the required dependencies by vcpkg.
+You can find the full documentation on the [d7y.io](https://d7y.io).
 
-```shell
-vcpkg install re2
-```
+## Community
 
-Install the required dependencies for object storage.
+Join the conversation and help the community.
 
-```shell
-vcpkg install aws-sdk-cpp
-vcpkg install google-cloud-cpp[storage]
-vcpkg install azure-storage-blobs-cpp
-```
+- **Slack Channel**: [#dragonfly](https://cloud-native.slack.com/messages/dragonfly/) on [CNCF Slack](https://slack.cncf.io/)
+- **Discussion Group**: <dragonfly-discuss@googlegroups.com>
+- **Developer Group**: <dragonfly-developers@googlegroups.com>
+- **Github Discussions**: [Dragonfly Discussion Forum](https://github.com/dragonflyoss/Dragonfly2/discussions)
+- **Twitter**: [@dragonfly_oss](https://twitter.com/dragonfly_oss)
+- **DingTalk**: [22880028764](https://qr.dingtalk.com/action/joingroup?code=v1,k1,pkV9IbsSyDusFQdByPSK3HfCG61ZCLeb8b/lpQ3uUqI=&_dt_no_comment=1&origin=11)
 
-To build the repository agent:
+## Contributing
 
-<!-- markdownlint-disable -->
-
-```shell
-mkdir build
-cd build
-cmake -D CMAKE_INSTALL_PREFIX:PATH=`pwd`/install -D TRITON_ENABLE_GCS=true -D TRITON_ENABLE_AZURE_STORAGE=true -D TRITON_ENABLE_S3=true ..
-make install
-```
-
-<!-- markdownlint-restore -->
-
-## Using the Dragonfly Repository Agent
-
-The dragonfly repository agent is configured by plugin name in the ModelRepositoryAgents section of the model configuration.
-
-```shell
-model_repository_agents
-{
-  agents [
-    {
-      name: "dragonfly",
-    }
-  ]
-}
-```
-
-To group the credentials into a single file for Triton, you may set the `TRITON_CLOUD_CREDENTIAL_PATH` environment
-variable to a path pointing to a JSON file of the following format, residing in the local file system.
-
-```shell
-export TRITON_CLOUD_CREDENTIAL_PATH="cloud_credential.json"
-```
-
-`cloud_credential.json`:
-
-```shell
-{
-  "gs": {
-    "": "PATH_TO_GOOGLE_APPLICATION_CREDENTIALS",
-    "gs://gcs-bucket-002": "PATH_TO_GOOGLE_APPLICATION_CREDENTIALS_2"
-  },
-  "s3": {
-    "": {
-      "secret_key": "AWS_SECRET_ACCESS_KEY",
-      "key_id": "AWS_ACCESS_KEY_ID",
-      "region": "AWS_DEFAULT_REGION",
-      "session_token": "",
-      "profile": ""
-    },
-    "s3://s3-bucket-002": {
-      "secret_key": "AWS_SECRET_ACCESS_KEY_2",
-      "key_id": "AWS_ACCESS_KEY_ID_2",
-      "region": "AWS_DEFAULT_REGION_2",
-      "session_token": "AWS_SESSION_TOKEN_2",
-      "profile": "AWS_PROFILE_2"
-    }
-  },
-  "as": {
-    "": {
-      "account_str": "AZURE_STORAGE_ACCOUNT",
-      "account_key": "AZURE_STORAGE_KEY"
-    },
-    "as://Account-002/Container": {
-      "account_str": "",
-      "account_key": ""
-    }
-  }
-}
-```
-
-Set the configuration file for Dragonfly. You may set the `TRITON_DRAGONFLY_CONFIG_PATH` environment variable
-to a path pointing to a JSON file of the following format, residing in the local file system.
-
-```shell
-export TRITON_DRAGONFLY_CONFIG_PATH="dragonfly_config.json"
-```
-
-```shell
-"dragonfly_config.json":
-{
-	"proxy": "http://127.0.0.1:65001",
-	"header": {
-	},
-	"filter": [
-		"X-Amz-Algorithm",
-		"X-Amz-Credential&X-Amz-Date",
-		"X-Amz-Expires",
-		"X-Amz-SignedHeaders",
-		"X-Amz-Signature"
-	],
-}
-```
-
-- proxy: Address of Dragonfly's Peer Proxy.
-- header: Add request headers to the request.
-- filter: Used to generate a unique task and filter out unnecessary query parameters in the URL.
+You should check out our
+[CONTRIBUTING](./CONTRIBUTING.md) and develop the project together.
