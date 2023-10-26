@@ -1,29 +1,41 @@
-g# dragonfly-repository-agent
+# dragonfly-repository-agent
+
 The Triton repository agent that downloads model via dragonfly.
 
 ## Build the Dragonfly Repository Agent
+
 Use a recent cmake to build. First install the required dependencies by vcpkg.
+
+```shell
+vcpkg install re2
 ```
 
-$ vcpkg install re2
-```
 Install the required dependencies for object storage.
+
+```shell
+vcpkg install aws-sdk-cpp
+vcpkg install google-cloud-cpp[storage]
+vcpkg install azure-storage-blobs-cpp
 ```
-$ vcpkg install aws-sdk-cpp
-$ vcpkg install google-cloud-cpp[storage]
-$ vcpkg install azure-storage-blobs-cpp
-```
+
 To build the repository agent:
+
+<!-- markdownlint-disable -->
+
+```shell
+mkdir build
+cd build
+cmake -D CMAKE_INSTALL_PREFIX:PATH=`pwd`/install -D TRITON_ENABLE_GCS=true -D TRITON_ENABLE_AZURE_STORAGE=true -D TRITON_ENABLE_S3=true ..
+make install
 ```
-$ mkdir build
-$ cd build
-$ cmake -D CMAKE_INSTALL_PREFIX:PATH=`pwd`/install -D TRITON_ENABLE_GCS=true -D TRITON_ENABLE_AZURE_STORAGE=true -D TRITON_ENABLE_S3=true ..
-$ make install
-```
+
+<!-- markdownlint-restore -->
 
 ## Using the Dragonfly Repository Agent
+
 The dragonfly repository agent is configured by plugin name in the ModelRepositoryAgents section of the model configuration.
-```
+
+```shell
 model_repository_agents
 {
   agents [
@@ -32,15 +44,18 @@ model_repository_agents
     }
   ]
 }
+```
 
-```
-To group the credentials into a single file for Triton, you may set the `TRITON_CLOUD_CREDENTIAL_PATH` environment variable to a path pointing to a JSON file of the following format, residing in the local file system.
-```
+To group the credentials into a single file for Triton, you may set the `TRITON_CLOUD_CREDENTIAL_PATH` environment
+variable to a path pointing to a JSON file of the following format, residing in the local file system.
+
+```shell
 export TRITON_CLOUD_CREDENTIAL_PATH="cloud_credential.json"
 ```
 
-"cloud_credential.json":
-```
+`cloud_credential.json`:
+
+```shell
 {
   "gs": {
     "": "PATH_TO_GOOGLE_APPLICATION_CREDENTIALS",
@@ -75,12 +90,14 @@ export TRITON_CLOUD_CREDENTIAL_PATH="cloud_credential.json"
 }
 ```
 
-Set the configuration file for Dragonfly. You may set the `TRITON_DRAGONFLY_CONFIG_PATH` environment variable to a path pointing to a JSON file of the following format, residing in the local file system.
-```
+Set the configuration file for Dragonfly. You may set the `TRITON_DRAGONFLY_CONFIG_PATH` environment variable
+to a path pointing to a JSON file of the following format, residing in the local file system.
+
+```shell
 export TRITON_DRAGONFLY_CONFIG_PATH="dragonfly_config.json"
 ```
 
-```
+```shell
 "dragonfly_config.json":
 {
 	"proxy": "http://127.0.0.1:65001",
@@ -95,6 +112,7 @@ export TRITON_DRAGONFLY_CONFIG_PATH="dragonfly_config.json"
 	],
 }
 ```
-- proxy:  Address of Dragonfly's Peer Proxy.
+
+- proxy: Address of Dragonfly's Peer Proxy.
 - header: Add request headers to the request.
 - filter: Used to generate a unique task and filter out unnecessary query parameters in the URL.
