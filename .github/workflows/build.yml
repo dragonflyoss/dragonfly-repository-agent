@@ -2,14 +2,13 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
-    tags:
-      - v*
+    branches: [main, release-*]
+  pull_request:
+    branches: [main, release-*]
 
 jobs:
-  push_image_to_registry:
-    name: Push Image
+  build:
+    name: Build libtritonrepoagent_dragonfly.so
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -17,56 +16,43 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Get Version
-        id: get_version
+      - name: Install dependencies
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          if [[ ${GITHUB_REF} == "refs/heads/main" ]]; then
-            VERSION=latest
-          fi
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          sudo apt-get update && sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git \
+          curl \
+          zip \
+          unzip \
+          tar \
+          pkg-config \
+          python3
 
-      - name: Get Git Revision
-        id: vars
-        shell: bash
+      - name: Install vcpkg
         run: |
-          echo "git_revision=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
+          $HOME/vcpkg/bootstrap-vcpkg.sh
 
-      - name: PrepareReg Names
+      - name: Install project dependencies with vcpkg
         run: |
-          echo IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          $HOME/vcpkg/vcpkg install re2
+          $HOME/vcpkg/vcpkg install aws-sdk-cpp
+          $HOME/vcpkg/vcpkg install google-cloud-cpp[storage]
+          $HOME/vcpkg/vcpkg install azure-storage-blobs-cpp
+          $HOME/vcpkg/vcpkg install rapidjson
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Create build directory
+        run: mkdir -p $HOME/build
 
-      - name: Login Docker Hub
-        uses: docker/login-action@v3
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push to Registry
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64
-          file: Dockerfile
-          labels: |-
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          build-args: |
-            GITVERSION=git-${{ steps.vars.outputs.git_revision }}
-            VERSION=${{ steps.get_version.outputs.VERSION }}
-          tags: |
-            dragonflyoss/tritonserver-dragonfly:${{ steps.get_version.outputs.VERSION }}
-            ghcr.io/${{ env.IMAGE_REPOSITORY }}/tritonserver-dragonfly:${{ steps.get_version.outputs.VERSION }}
-          push:
-            true
+      - name: Build the repository agent
+        run: |
+          mkdir -p $HOME/build && cd $HOME/build
+          cmake -DCMAKE_TOOLCHAIN_FILE=$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake \
+                -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/install \
+                -DTRITON_ENABLE_GCS=true \
+                -DTRITON_ENABLE_AZURE_STORAGE=true \
+                -DTRITON_ENABLE_S3=true \
+                -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+                $GITHUB_WORKSPACE
+          make install
