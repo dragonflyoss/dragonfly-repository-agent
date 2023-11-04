@@ -1,27 +1,26 @@
 /*
-*     Copyright 2023 The Dragonfly Authors
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ *     Copyright 2023 The Dragonfly Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
 
 #include "azure/storage/blobs.hpp"
 #include "azure/storage/common/storage_credential.hpp"
-#include "vector"
-
 #include "common.h"
 #include "common_utils.h"
+#include "vector"
 
 #undef LOG_INFO
 #undef LOG_WARNING
@@ -56,7 +55,8 @@ class ASFileSystem : public FileSystem {
   TRITONSERVER_Error* CheckClient(const std::string& path);
 
   TRITONSERVER_Error* LocalizePath(
-      const std::string& location, const std::string& temp_dir, DragonflyConfig& config_path) override;
+      const std::string& location, const std::string& temp_dir,
+      DragonflyConfig& config_path) override;
 
 
   TRITONSERVER_Error* FileExists(const std::string& path, bool* exists);
@@ -73,8 +73,7 @@ class ASFileSystem : public FileSystem {
       const std::string& container, const std::string& dir_path,
       const std::function<TRITONSERVER_Error*(
           const std::vector<asb::Models::BlobItem>& blobs,
-          const std::vector<std::string>& blob_prefixes)>&
-          callback);
+          const std::vector<std::string>& blob_prefixes)>& callback);
 
   TRITONSERVER_Error* DownloadFolder(
       const std::string& container, const std::string& path,
@@ -91,7 +90,8 @@ ASFileSystem::ParsePath(
   std::string host_name, query;
   if (!RE2::FullMatch(path, as_regex_, &host_name, container, blob, &query)) {
     return TRITONSERVER_ErrorNew(
-        TRITONSERVER_ERROR_INTERNAL, ("Invalid azure storage path: " + path).c_str());
+        TRITONSERVER_ERROR_INTERNAL,
+        ("Invalid azure storage path: " + path).c_str());
   }
   return nullptr;
 }
@@ -196,7 +196,8 @@ ASFileSystem::FileExists(const std::string& path, bool* exists)
   catch (as::StorageException& ex) {
     return TRITONSERVER_ErrorNew(
         TRITONSERVER_ERROR_INTERNAL,
-        ("Failed to check if file exists at " + path + ":" + ex.what()).c_str());
+        ("Failed to check if file exists at " + path + ":" + ex.what())
+            .c_str());
   }
 
   return nullptr;
@@ -209,17 +210,20 @@ ASFileSystem::DownloadFolder(
 {
   auto container_client = client_->GetBlobContainerClient(container);
   auto func = [&](const std::vector<asb::Models::BlobItem>& blobs,
-                  const std::vector<std::string>& blob_prefixes) -> TRITONSERVER_Error* {
+                  const std::vector<std::string>& blob_prefixes)
+      -> TRITONSERVER_Error* {
     for (const auto& blob_item : blobs) {
       const auto& local_path = JoinPath({dest, BaseName(blob_item.Name)});
       try {
-        std::string url = container_client.GetBlobClient(blob_item.Name).GetUrl();
+        std::string url =
+            container_client.GetBlobClient(blob_item.Name).GetUrl();
         RETURN_IF_ERROR(DownloadFile(url, local_path, config));
       }
       catch (as::StorageException& ex) {
         return TRITONSERVER_ErrorNew(
             TRITONSERVER_ERROR_INTERNAL,
-            ("Failed to download file at " + blob_item.Name + ":" + ex.what()).c_str());
+            ("Failed to download file at " + blob_item.Name + ":" + ex.what())
+                .c_str());
       }
     }
     for (const auto& directory_item : blob_prefixes) {
@@ -230,9 +234,11 @@ ASFileSystem::DownloadFolder(
         return TRITONSERVER_ErrorNew(
             TRITONSERVER_ERROR_INTERNAL,
             ("Failed to create local folder: " + local_path +
-             ", errno:" + strerror(errno)).c_str());
+             ", errno:" + strerror(errno))
+                .c_str());
       }
-      RETURN_IF_ERROR(DownloadFolder(container, directory_item, local_path, config));
+      RETURN_IF_ERROR(
+          DownloadFolder(container, directory_item, local_path, config));
     }
     return nullptr;
   };
@@ -241,7 +247,8 @@ ASFileSystem::DownloadFolder(
 
 TRITONSERVER_Error*
 ASFileSystem::LocalizePath(
-    const std::string& location, const std::string& temp_dir, DragonflyConfig& config)
+    const std::string& location, const std::string& temp_dir,
+    DragonflyConfig& config)
 {
   bool exists;
   RETURN_IF_ERROR(FileExists(location, &exists));
@@ -264,13 +271,12 @@ ASFileSystem::LocalizePath(
   return DownloadFolder(container, blob, temp_dir, config);
 }
 
-    TRITONSERVER_Error*
+TRITONSERVER_Error*
 ASFileSystem::ListDirectory(
     const std::string& container, const std::string& dir_path,
     const std::function<TRITONSERVER_Error*(
         const std::vector<asb::Models::BlobItem>& blobs,
-        const std::vector<std::string>& blob_prefixes)>&
-        callback)
+        const std::vector<std::string>& blob_prefixes)>& callback)
 {
   auto container_client = client_->GetBlobContainerClient(container);
   auto options = asb::ListBlobsOptions();
@@ -288,7 +294,8 @@ ASFileSystem::ListDirectory(
   catch (as::StorageException& ex) {
     return TRITONSERVER_ErrorNew(
         TRITONSERVER_ERROR_INTERNAL,
-        ("Failed to get contents of directory " + dir_path + ":" + ex.what()).c_str());
+        ("Failed to get contents of directory " + dir_path + ":" + ex.what())
+            .c_str());
   }
 
   return nullptr;

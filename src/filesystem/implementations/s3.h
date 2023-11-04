@@ -1,30 +1,21 @@
 /*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
 
 #include "aws/core/Aws.h"
 #include "aws/core/auth/AWSCredentialsProvider.h"
-#include "re2/re2.h"
-#include "triton/core/tritonserver.h"
-
-#include "common.h"
-#include "common_utils.h"
-#include "sys/stat.h"
-#include "iostream"
-#include "fstream"
-
 #include "aws/core/client/ClientConfiguration.h"
 #include "aws/core/http/curl/CurlHttpClient.h"
 #include "aws/core/http/standard/StandardHttpRequest.h"
@@ -33,8 +24,15 @@
 #include "aws/s3/model/HeadObjectRequest.h"
 #include "aws/s3/model/ListObjectsV2Request.h"
 #include "aws/s3/model/ListObjectsV2Result.h"
+#include "common.h"
+#include "common_utils.h"
+#include "fstream"
+#include "iostream"
+#include "re2/re2.h"
+#include "sys/stat.h"
+#include "triton/core/tritonserver.h"
 
-namespace triton::repoagent::dragonfly{
+namespace triton::repoagent::dragonfly {
 
 namespace s3 = Aws::S3;
 
@@ -114,7 +112,8 @@ class S3FileSystem : public FileSystem {
   S3FileSystem(const std::string& s3_path, const S3Credential& s3_cred);
 
   TRITONSERVER_Error* LocalizePath(
-      const std::string& location, const std::string& temp_dir, DragonflyConfig& config) override;
+      const std::string& location, const std::string& temp_dir,
+      DragonflyConfig& config) override;
 
   TRITONSERVER_Error* CheckClient(const std::string& s3_path);
 
@@ -125,12 +124,14 @@ class S3FileSystem : public FileSystem {
       const std::string& path, std::set<std::string>* contents);
   TRITONSERVER_Error* ParsePath(
       const std::string& path, std::string* bucket, std::string* object);
-  static TRITONSERVER_Error* CleanPath(const std::string& s3_path, std::string* clean_path);
+  static TRITONSERVER_Error* CleanPath(
+      const std::string& s3_path, std::string* clean_path);
   std::unique_ptr<s3::S3Client> client_;  // init after Aws::InitAPI is called
   re2::RE2 s3_regex_;
 };
 
-TRITONSERVER_Error* S3FileSystem::ParsePath(
+TRITONSERVER_Error*
+S3FileSystem::ParsePath(
     const std::string& path, std::string* bucket, std::string* object)
 {
   // Cleanup extra slashes
@@ -315,7 +316,8 @@ S3FileSystem::CheckClient(const std::string& s3_path)
         TRITONSERVER_ERROR_INTERNAL,
         ("Unable to create S3 filesystem client. Check account credentials. "
          "Exception: '" +
-         err.GetExceptionName() + "' Message: '" + err.GetMessage() + "'").c_str());
+         err.GetExceptionName() + "' Message: '" + err.GetMessage() + "'")
+            .c_str());
   }
   return nullptr;
 }
@@ -351,8 +353,8 @@ S3FileSystem::FileExists(const std::string& path, bool* exists)
           ("Could not get MetaData for object at " + path +
            " due to exception: " +
            head_object_outcome.GetError().GetExceptionName() +
-           ", error message: " +
-           head_object_outcome.GetError().GetMessage()).c_str());
+           ", error message: " + head_object_outcome.GetError().GetMessage())
+              .c_str());
     }
   } else {
     *exists = true;
@@ -380,7 +382,8 @@ S3FileSystem::IsDirectory(const std::string& path, bool* is_dir)
         ("Could not get MetaData for bucket with name " + bucket +
          " due to exception: " +
          head_bucket_outcome.GetError().GetExceptionName() +
-         ", error message: " + head_bucket_outcome.GetError().GetMessage()).c_str());
+         ", error message: " + head_bucket_outcome.GetError().GetMessage())
+            .c_str());
   }
 
   // Root case - bucket exists and object path is empty
@@ -402,7 +405,8 @@ S3FileSystem::IsDirectory(const std::string& path, bool* is_dir)
         TRITONSERVER_ERROR_INTERNAL,
         ("Failed to list objects with prefix " + path + " due to exception: " +
          list_objects_outcome.GetError().GetExceptionName() +
-         ", error message: " + list_objects_outcome.GetError().GetMessage()).c_str());
+         ", error message: " + list_objects_outcome.GetError().GetMessage())
+            .c_str());
   }
   return nullptr;
 }
@@ -434,8 +438,8 @@ S3FileSystem::GetDirectoryContents(
           ("Could not list contents of directory at " + true_path +
            " due to exception: " +
            list_objects_outcome.GetError().GetExceptionName() +
-           ", error message: " +
-           list_objects_outcome.GetError().GetMessage()).c_str());
+           ", error message: " + list_objects_outcome.GetError().GetMessage())
+              .c_str());
     }
     const auto& list_objects_result = list_objects_outcome.GetResult();
     for (const auto& s3_object : list_objects_result.GetContents()) {
@@ -475,13 +479,15 @@ S3FileSystem::GetDirectoryContents(
 
 TRITONSERVER_Error*
 S3FileSystem::LocalizePath(
-    const std::string& location, const std::string& temp_dir, DragonflyConfig& config) {
+    const std::string& location, const std::string& temp_dir,
+    DragonflyConfig& config)
+{
   bool exists;
   RETURN_IF_ERROR(FileExists(location, &exists));
   if (!exists) {
     return TRITONSERVER_ErrorNew(
         TRITONSERVER_ERROR_INTERNAL,
-        ("directory or file does not exist at " +  location).c_str());
+        ("directory or file does not exist at " + location).c_str());
   }
 
   std::string clean_path;
@@ -496,11 +502,11 @@ S3FileSystem::LocalizePath(
     effective_path = location;
   }
 
-  std::set <std::string> contents;
+  std::set<std::string> contents;
   bool is_dir;
   RETURN_IF_ERROR(IsDirectory(location, &is_dir));
   if (is_dir) {
-    std::set <std::string> filenames;
+    std::set<std::string> filenames;
     RETURN_IF_ERROR(GetDirectoryContents(effective_path, &filenames));
     for (auto itr = filenames.begin(); itr != filenames.end(); ++itr) {
       contents.insert(JoinPath({effective_path, *itr}));
@@ -513,14 +519,13 @@ S3FileSystem::LocalizePath(
   }
 
   while (!contents.empty()) {
-    std::set <std::string> tmp_contents = contents;
+    std::set<std::string> tmp_contents = contents;
     contents.clear();
     for (const auto& s3_fpath : tmp_contents) {
       std::string s3_removed_path = s3_fpath.substr(effective_path.size());
-      std::string local_fpath =
-          s3_removed_path.empty()
-              ? temp_dir
-              : JoinPath({temp_dir, s3_removed_path});
+      std::string local_fpath = s3_removed_path.empty()
+                                    ? temp_dir
+                                    : JoinPath({temp_dir, s3_removed_path});
       bool is_subdir;
       RETURN_IF_ERROR(IsDirectory(s3_fpath, &is_subdir));
       if (is_subdir) {
@@ -535,12 +540,13 @@ S3FileSystem::LocalizePath(
           return TRITONSERVER_ErrorNew(
               TRITONSERVER_ERROR_INTERNAL,
               ("Failed to create local folder: " + local_fpath +
-               ", errno:" + strerror(errno)).c_str());
+               ", errno:" + strerror(errno))
+                  .c_str());
         }
 
-        std::set <std::string> subdir_contents;
+        std::set<std::string> subdir_contents;
         RETURN_IF_ERROR(GetDirectoryContents(s3_fpath, &subdir_contents));
-        for (const auto & subdir_content : subdir_contents) {
+        for (const auto& subdir_content : subdir_contents) {
           contents.insert(JoinPath({s3_fpath, subdir_content}));
         }
       } else {
@@ -548,7 +554,7 @@ S3FileSystem::LocalizePath(
         RETURN_IF_ERROR(ParsePath(s3_fpath, &file_bucket, &file_object));
 
         std::string url = client_->GeneratePresignedUrl(
-            file_bucket,file_object, Aws::Http::HttpMethod::HTTP_GET);
+            file_bucket, file_object, Aws::Http::HttpMethod::HTTP_GET);
         RETURN_IF_ERROR(DownloadFile(url, local_fpath, config));
       }
     }
@@ -557,4 +563,4 @@ S3FileSystem::LocalizePath(
   return nullptr;
 }
 
-} // namespace triton::core
+}  // namespace triton::repoagent::dragonfly
