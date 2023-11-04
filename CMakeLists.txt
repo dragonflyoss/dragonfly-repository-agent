@@ -101,16 +101,19 @@ target_link_libraries(triton-dragonfly-repoagent PRIVATE re2::re2)
 #
 if(${TRITON_ENABLE_S3})
     find_package(ZLIB REQUIRED)
-    find_package(AWSSDK REQUIRED COMPONENTS s3)
+    find_package(AWSSDK REQUIRED COMPONENTS core s3)
     message(STATUS "Using aws-sdk-cpp ${AWSSDK_VERSION}")
     target_include_directories(
             triton-dragonfly-repoagent
-            PRIVATE $<TARGET_PROPERTY:aws-cpp-sdk-s3,INTERFACE_INCLUDE_DIRECTORIES>
+            PRIVATE
+            $<TARGET_PROPERTY:aws-cpp-sdk-core,INTERFACE_INCLUDE_DIRECTORIES>
+            $<TARGET_PROPERTY:aws-cpp-sdk-s3,INTERFACE_INCLUDE_DIRECTORIES>
     )
+
     target_link_libraries(
             triton-dragonfly-repoagent
             PRIVATE
-            aws-cpp-sdk-s3
+            aws-cpp-sdk-s3 aws-cpp-sdk-core
     )
 endif() # TRITON_ENABLE_S3
 
