@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -8,10 +8,10 @@ on:
 
 jobs:
   build:
-    name: Build libtritonrepoagent_dragonfly.so
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -45,7 +45,7 @@ jobs:
       - name: Create build directory
         run: mkdir -p $HOME/build
 
-      - name: Build the repository agent
+      - name: Build repository agent
         run: |
           mkdir -p $HOME/build && cd $HOME/build
           cmake -DCMAKE_TOOLCHAIN_FILE=$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake \
