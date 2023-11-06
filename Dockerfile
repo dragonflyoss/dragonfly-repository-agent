@@ -44,4 +44,8 @@ FROM nvcr.io/nvidia/tritonserver:23.08-py3
 
 RUN mkdir /opt/tritonserver/repoagents/dragonfly
 
+EXPOSE 8000
+EXPOSE 8001
+EXPOSE 8002
+
 COPY --from=builder /dragonfly-repository-agent/build/libtritonrepoagent_dragonfly.so /opt/tritonserver/repoagents/dragonfly/libtritonrepoagent_dragonfly.so
