@@ -1,23 +1,24 @@
 /*
-*     Copyright 2023 The Dragonfly Authors
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ *     Copyright 2023 The Dragonfly Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include "api.h"
-#include "implementations/common.h"
-#include "triton/core/tritonserver.h"
+
 #include "common_utils.h"
 #include "config.h"
+#include "implementations/common.h"
+#include "triton/core/tritonserver.h"
 
 #define TRITON_ENABLE_GCS
 #define TRITON_ENABLE_S3
@@ -36,7 +37,6 @@
 #endif  // TRITON_ENABLE_AZURE_STORAGE
 
 
-
 #include <mutex>
 
 namespace triton::repoagent::dragonfly {
@@ -46,38 +46,34 @@ namespace {
 class FileSystemManager {
  public:
   TRITONSERVER_Error* GetFileSystem(
-      const std::string& path,
-      std::shared_ptr<FileSystem>& file_system,
+      const std::string& path, std::shared_ptr<FileSystem>& file_system,
       const std::string& cred_path);
 
   // 创建file_system
  private:
-  template<class CacheType, class CredentialType, class FileSystemType>
+  template <class CacheType, class CredentialType, class FileSystemType>
   TRITONSERVER_Error* GetFileSystem(
-      const std::string& path,
-      CacheType& cache,
-      std::shared_ptr<FileSystem>& file_system,
-      const std::string& cred_path);
+      const std::string& path, CacheType& cache,
+      std::shared_ptr<FileSystem>& file_system, const std::string& cred_path);
 
   TRITONSERVER_Error* LoadCredentials(const std::string& cred_path);
 
-  template<class CacheType, class CredentialType, class FileSystemType>
+  template <class CacheType, class CredentialType, class FileSystemType>
   static void LoadCredential(
-      triton::common::TritonJson::Value &creds_json,
-      const char *fs_type,
-      CacheType &cache);
+      triton::common::TritonJson::Value& creds_json, const char* fs_type,
+      CacheType& cache);
 
   template <class CredentialType, class FileSystemType>
-  static void SortCache(std::vector<std::tuple<
-                            std::string, CredentialType,
-                            std::shared_ptr<FileSystemType>>>& cache);
+  static void SortCache(
+      std::vector<std::tuple<
+          std::string, CredentialType, std::shared_ptr<FileSystemType>>>&
+          cache);
 
   template <class CredentialType, class FileSystemType>
   static TRITONSERVER_Error* GetLongestMatchingNameIndex(
       const std::vector<std::tuple<
           std::string, CredentialType, std::shared_ptr<FileSystemType>>>& cache,
-      const std::string& path,
-      size_t& idx);
+      const std::string& path, size_t& idx);
 
 #ifdef TRITON_ENABLE_GCS
   std::vector<
@@ -98,7 +94,9 @@ class FileSystemManager {
 
 TRITONSERVER_Error*
 FileSystemManager::GetFileSystem(
-    const std::string& path, std::shared_ptr<FileSystem>& file_system, const std::string& cred_path) {
+    const std::string& path, std::shared_ptr<FileSystem>& file_system,
+    const std::string& cred_path)
+{
   // Check if this is a GCS path (gs://$BUCKET_NAME)
   if (!path.empty() && !path.rfind("gs://", 0)) {
 #ifndef TRITON_ENABLE_GCS
@@ -108,7 +106,8 @@ FileSystemManager::GetFileSystem(
         "-DTRITON_ENABLE_GCS=ON.");
 #else
     return GetFileSystem<
-        std::vector<std::tuple<std::string, GCSCredential, std::shared_ptr<GCSFileSystem>>>,
+        std::vector<std::tuple<
+            std::string, GCSCredential, std::shared_ptr<GCSFileSystem>>>,
         GCSCredential, GCSFileSystem>(path, gs_cache_, file_system, cred_path);
 #endif  // TRITON_ENABLE_GCS
   }
@@ -144,8 +143,7 @@ FileSystemManager::GetFileSystem(
   }
 
   return TRITONSERVER_ErrorNew(
-      TRITONSERVER_ERROR_UNSUPPORTED,
-      "filesystem type error");
+      TRITONSERVER_ERROR_UNSUPPORTED, "filesystem type error");
 }
 
 TRITONSERVER_Error*
@@ -168,15 +166,15 @@ FileSystemManager::LoadCredentials(const std::string& cred_path)
 #ifdef TRITON_ENABLE_S3
   // load S3 credentials
   LoadCredential<
-      std::vector<std::tuple<
-          std::string, S3Credential, std::shared_ptr<S3FileSystem>>>,
+      std::vector<
+          std::tuple<std::string, S3Credential, std::shared_ptr<S3FileSystem>>>,
       S3Credential, S3FileSystem>(creds_json, "s3", s3_cache_);
 #endif  // TRITON_ENABLE_S3
 #ifdef TRITON_ENABLE_AZURE_STORAGE
   // load AS credentials
   LoadCredential<
-      std::vector<std::tuple<
-          std::string, ASCredential, std::shared_ptr<ASFileSystem>>>,
+      std::vector<
+          std::tuple<std::string, ASCredential, std::shared_ptr<ASFileSystem>>>,
       ASCredential, ASFileSystem>(creds_json, "as", as_cache_);
 #endif  // TRITON_ENABLE_AZURE_STORAGE
   return nullptr;
@@ -212,8 +210,7 @@ template <class CacheType, class CredentialType, class FileSystemType>
 TRITONSERVER_Error*
 FileSystemManager::GetFileSystem(
     const std::string& path, CacheType& cache,
-    std::shared_ptr<FileSystem>& file_system,
-    const std::string& cred_path)
+    std::shared_ptr<FileSystem>& file_system, const std::string& cred_path)
 {
   RETURN_IF_ERROR(LoadCredentials(cred_path));
 
@@ -221,7 +218,8 @@ FileSystemManager::GetFileSystem(
   RETURN_IF_ERROR(GetLongestMatchingNameIndex(cache, path, idx));
   CredentialType cred = std::get<1>(cache[idx]);
 
-  std::shared_ptr<FileSystemType> fs = std::make_shared<FileSystemType>(path, cred);
+  std::shared_ptr<FileSystemType> fs =
+      std::make_shared<FileSystemType>(path, cred);
   RETURN_IF_ERROR(fs->CheckClient(path));
   file_system = fs;
   return nullptr;
@@ -229,8 +227,9 @@ FileSystemManager::GetFileSystem(
 
 template <class CredentialType, class FileSystemType>
 void
-FileSystemManager::SortCache(std::vector<std::tuple<
-                                 std::string, CredentialType, std::shared_ptr<FileSystemType>>>& cache)
+FileSystemManager::SortCache(
+    std::vector<std::tuple<
+        std::string, CredentialType, std::shared_ptr<FileSystemType>>>& cache)
 {
   std::sort(
       cache.begin(), cache.end(),
@@ -261,11 +260,12 @@ FileSystemManager::GetLongestMatchingNameIndex(
 }
 
 FileSystemManager fsm_;
-}
+}  // namespace
 
 TRITONSERVER_Error*
-LocalizePath(const std::string& config_path, const std::string& cred_path,
-             const std::string& location, const std::string& temp_dir)
+LocalizePath(
+    const std::string& config_path, const std::string& cred_path,
+    const std::string& location, const std::string& temp_dir)
 {
   std::shared_ptr<FileSystem> fs;
   RETURN_IF_ERROR(fsm_.GetFileSystem(location, fs, cred_path));
@@ -279,4 +279,4 @@ LocalizePath(const std::string& config_path, const std::string& cred_path,
   return fs->LocalizePath(location, temp_dir, config);
 }
 
-}
+}  // namespace triton::repoagent::dragonfly

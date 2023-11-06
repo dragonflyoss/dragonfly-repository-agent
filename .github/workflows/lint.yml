@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, release-*]
+  pull_request:
+    branches: [main, release-*]
+
+jobs:
+  lint:
+    name: CPP Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+
+      - name: Run clang-format
+        run: |
+          find . -iname *.h -o -iname *.cpp | xargs clang-format -i
+
+      - name: Check for changes
+        run: |
+          if ! git diff --exit-code; then
+            echo "Code style issues found"
+            git diff
+            exit 1
+          fi

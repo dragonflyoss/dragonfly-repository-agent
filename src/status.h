@@ -8,11 +8,11 @@ struct ErrorException {
   TRITONSERVER_Error* err_;
 };
 
-#define RETURN_IF_ERROR(X)              \
- do {                                   \
-   TRITONSERVER_Error* rie_err__ = (X); \
-   if (rie_err__ != nullptr) {          \
-     return rie_err__;                  \
-   }                                    \
- } while (false)
-#endif // STATUS_H
+#define RETURN_IF_ERROR(X)               \
+  do {                                   \
+    TRITONSERVER_Error* rie_err__ = (X); \
+    if (rie_err__ != nullptr) {          \
+      return rie_err__;                  \
+    }                                    \
+  } while (false)
+#endif  // STATUS_H

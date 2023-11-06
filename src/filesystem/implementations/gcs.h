@@ -1,42 +1,42 @@
 /*
-*     Copyright 2023 The Dragonfly Authors
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ *     Copyright 2023 The Dragonfly Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
 
-#include "google/cloud/storage/client.h"
-#include "triton/core/tritonserver.h"
-#include "set"
-
 #include "common.h"
 #include "common_utils.h"
-#include "sys/stat.h"
-#include "iostream"
 #include "fstream"
+#include "google/cloud/storage/client.h"
+#include "iostream"
+#include "set"
+#include "sys/stat.h"
+#include "triton/core/tritonserver.h"
 
-namespace triton::repoagent::dragonfly{
+namespace triton::repoagent::dragonfly {
 
 namespace gcs = google::cloud::storage;
 
 struct GCSCredential {
   std::string path_;
 
-  explicit  GCSCredential(triton::common::TritonJson::Value& cred_json);
+  explicit GCSCredential(triton::common::TritonJson::Value& cred_json);
 };
 
-GCSCredential::GCSCredential(triton::common::TritonJson::Value& cred_json){
+GCSCredential::GCSCredential(triton::common::TritonJson::Value& cred_json)
+{
   cred_json.AsString(&path_);
 }
 
@@ -47,11 +47,13 @@ class GCSFileSystem : public FileSystem {
 
   TRITONSERVER_Error* CheckClient();
   // unify with S3 interface
-  TRITONSERVER_Error* CheckClient(const std::string& path) { return CheckClient(); }
+  TRITONSERVER_Error* CheckClient(const std::string& path)
+  {
+    return CheckClient();
+  }
 
   TRITONSERVER_Error* LocalizePath(
-      const std::string& location,
-      const std::string& temp_dir,
+      const std::string& location, const std::string& temp_dir,
       DragonflyConfig& config) override;
 
  private:
@@ -61,12 +63,14 @@ class GCSFileSystem : public FileSystem {
       const std::string& path, std::set<std::string>* contents);
   static TRITONSERVER_Error* ParsePath(
       const std::string& path, std::string* bucket, std::string* object);
-  std::string GenerateGetSignedUrl(std::string const& bucket_name, std::string const& object_name);
+  std::string GenerateGetSignedUrl(
+      std::string const& bucket_name, std::string const& object_name);
 
   std::unique_ptr<gcs::Client> client_;
 };
 
-GCSFileSystem::GCSFileSystem(const std::string& path, const GCSCredential& gs_cred)
+GCSFileSystem::GCSFileSystem(
+    const std::string& path, const GCSCredential& gs_cred)
 {
   google::cloud::Options options;
   auto creds = gcs::oauth2::CreateServiceAccountCredentialsFromJsonFilePath(
@@ -100,7 +104,6 @@ TRITONSERVER_Error*
 GCSFileSystem::ParsePath(
     const std::string& path, std::string* bucket, std::string* object)
 {
-
   // Get the bucket name and the object path. Return error if input is malformed
   std::string::size_type bucket_start = path.find("gs://");
   if (bucket_start != std::string::npos) {
@@ -120,8 +123,7 @@ GCSFileSystem::ParsePath(
 
   if (bucket->empty()) {
     return TRITONSERVER_ErrorNew(
-        TRITONSERVER_ERROR_INTERNAL,
-        "No bucket name found in path");
+        TRITONSERVER_ERROR_INTERNAL, "No bucket name found in path");
   }
 
   return nullptr;
@@ -143,7 +145,8 @@ GCSFileSystem::GenerateGetSignedUrl(
 }
 
 TRITONSERVER_Error*
-GCSFileSystem::FileExists(const std::string& path, bool* exists) {
+GCSFileSystem::FileExists(const std::string& path, bool* exists)
+{
   *exists = false;
 
   std::string bucket, object;
@@ -212,11 +215,9 @@ GCSFileSystem::GetDirectoryContents(
   for (auto&& object_metadata :
        client_->ListObjects(bucket, gcs::Prefix(full_dir))) {
     if (!object_metadata) {
-      std::string msg =  "Could not list contents of directory at " +
-                        path + " : " +
-                        object_metadata.status().message();
-      return TRITONSERVER_ErrorNew(
-          TRITONSERVER_ERROR_INTERNAL, msg.c_str());
+      std::string msg = "Could not list contents of directory at " + path +
+                        " : " + object_metadata.status().message();
+      return TRITONSERVER_ErrorNew(TRITONSERVER_ERROR_INTERNAL, msg.c_str());
     }
 
     // In the case of empty directories, the directory itself will appear here
@@ -232,7 +233,8 @@ GCSFileSystem::GetDirectoryContents(
 
     // Let set take care of subdirectory contents
     std::string item;
-    if (item_end != std::string::npos) {  // ensure that item_end is valid before substr
+    if (item_end !=
+        std::string::npos) {  // ensure that item_end is valid before substr
       item = name.substr(item_start, item_end - item_start);
     } else {
       item = name.substr(item_start);
@@ -244,7 +246,6 @@ GCSFileSystem::GetDirectoryContents(
       return TRITONSERVER_ErrorNew(
           TRITONSERVER_ERROR_INTERNAL,
           ("Cannot handle item with empty name at " + path).c_str());
-
     }
   }
   return nullptr;
@@ -252,7 +253,8 @@ GCSFileSystem::GetDirectoryContents(
 
 TRITONSERVER_Error*
 GCSFileSystem::LocalizePath(
-    const std::string& location, const std::string& temp_dir, DragonflyConfig& config)
+    const std::string& location, const std::string& temp_dir,
+    DragonflyConfig& config)
 {
   bool exists;
   //
@@ -282,8 +284,7 @@ GCSFileSystem::LocalizePath(
     for (const auto& gcs_fpath : tmp_contents) {
       bool is_subdir;
       std::string gcs_removed_path = gcs_fpath.substr(location.size());
-      std::string local_fpath =
-          JoinPath({temp_dir, gcs_removed_path});
+      std::string local_fpath = JoinPath({temp_dir, gcs_removed_path});
       RETURN_IF_ERROR(IsDirectory(gcs_fpath, &is_subdir));
       if (is_subdir) {
 #ifdef _WIN32
@@ -319,4 +320,4 @@ GCSFileSystem::LocalizePath(
 
   return nullptr;
 }
-}
+}  // namespace triton::repoagent::dragonfly
