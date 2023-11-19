@@ -14,11 +14,12 @@ RUN apt-get update && apt-get install -y \
 RUN git clone https://github.com/Microsoft/vcpkg.git /vcpkg \
     && /vcpkg/bootstrap-vcpkg.sh
 
-RUN /vcpkg/vcpkg install re2 \
-    && /vcpkg/vcpkg install aws-sdk-cpp \
-    && /vcpkg/vcpkg install google-cloud-cpp[storage] \
-    && /vcpkg/vcpkg install azure-storage-blobs-cpp \
-    && /vcpkg/vcpkg install rapidjson
+RUN /vcpkg/vcpkg install re2
+RUN /vcpkg/vcpkg install grpc
+RUN /vcpkg/vcpkg install aws-sdk-cpp
+RUN /vcpkg/vcpkg install google-cloud-cpp[storage]
+RUN /vcpkg/vcpkg install azure-storage-blobs-cpp
+RUN /vcpkg/vcpkg install rapidjson
 
 RUN mkdir -p /dragonfly-repository-agent/build
 
@@ -49,3 +50,4 @@ EXPOSE 8001
 EXPOSE 8002
 
 COPY --from=builder /dragonfly-repository-agent/build/libtritonrepoagent_dragonfly.so /opt/tritonserver/repoagents/dragonfly/libtritonrepoagent_dragonfly.so
+
