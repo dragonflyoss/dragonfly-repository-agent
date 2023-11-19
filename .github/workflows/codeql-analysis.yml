@@ -1,0 +1,85 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ main, release-* ]
+    paths-ignore: [ '**.md', '**.png', '**.jpg', '**.svg', '**/docs/**' ]
+  pull_request:
+    branches: [ main, release-* ]
+    paths-ignore: [ '**.md', '**.png', '**.jpg', '**.svg', '**/docs/**' ]
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git \
+          curl \
+          zip \
+          unzip \
+          tar \
+          pkg-config \
+          python3
+
+      - name: Install vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
+          $HOME/vcpkg/bootstrap-vcpkg.sh
+
+      - name: Cache vcpkg packages
+        uses: actions/cache/restore@v3
+        with:
+          path: /home/runner/vcpkg/installed
+          key: Linux-vcpkg-${{ hashFiles('**/CMakeLists.txt') }}
+
+      - name: Install project dependencies with vcpkg
+        run: |
+          $HOME/vcpkg/vcpkg install re2
+          $HOME/vcpkg/vcpkg install aws-sdk-cpp
+          $HOME/vcpkg/vcpkg install google-cloud-cpp[storage]
+          $HOME/vcpkg/vcpkg install azure-storage-blobs-cpp
+          $HOME/vcpkg/vcpkg install rapidjson
+
+      - name: Cache vcpkg packages
+        uses: actions/cache/save@v3
+        with:
+          path: /home/runner/vcpkg
+          key: Linux-vcpkg-${{ hashFiles('**/CMakeLists.txt') }}
+
+      - name: Build repository agent
+        run: |
+          mkdir -p $HOME/build
+          cmake -S . -B build \
+                -DCMAKE_TOOLCHAIN_FILE=$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake \
+                -DTRITON_ENABLE_GCS=true \
+                -DTRITON_ENABLE_AZURE_STORAGE=true \
+                -DTRITON_ENABLE_S3=true \
+                -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON 
+  
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Build
+        run: |
+          cmake --build ./build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
