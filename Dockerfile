@@ -45,6 +45,9 @@ FROM nvcr.io/nvidia/tritonserver:23.08-py3
 
 RUN mkdir /opt/tritonserver/repoagents/dragonfly
 
+ENV TRITON_CLOUD_CREDENTIAL_PATH="/home/triton/cloud_credential.json"
+ENV TRITON_DRAGONFLY_CONFIG_PATH="/home/triton/dragonfly_config.json"
+
 EXPOSE 8000
 EXPOSE 8001
 EXPOSE 8002
