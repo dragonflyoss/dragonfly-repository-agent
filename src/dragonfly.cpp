@@ -43,7 +43,7 @@ TRITONREPOAGENT_ModelAction(
       if (file_path_c_str != nullptr) {
         // Load from credential file
         cred_path = std::string(file_path_c_str);
-      }else{
+      } else {
         cred_path="/home/triton/cloud_credential.json" ;
       }
 
@@ -53,7 +53,7 @@ TRITONREPOAGENT_ModelAction(
       if (config_path_c_str != nullptr) {
         // Load from config file
         config_path = std::string(config_path_c_str);
-      }else{
+      } else {
         config_path="/home/triton/dragonfly_config.json" ;
       }
 
