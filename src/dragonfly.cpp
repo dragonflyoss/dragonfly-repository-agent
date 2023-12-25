@@ -44,7 +44,7 @@ TRITONREPOAGENT_ModelAction(
         // Load from credential file
         cred_path = std::string(file_path_c_str);
       } else {
-        cred_path="/home/triton/cloud_credential.json" ;
+        cred_path = "/home/triton/cloud_credential.json";
       }
 
       const char* config_path_c_str =
@@ -54,7 +54,7 @@ TRITONREPOAGENT_ModelAction(
         // Load from config file
         config_path = std::string(config_path_c_str);
       } else {
-        config_path="/home/triton/dragonfly_config.json" ;
+        config_path = "/home/triton/dragonfly_config.json";
       }
 
       const char* temp_dir_cstr = nullptr;
