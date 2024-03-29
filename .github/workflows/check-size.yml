@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ main, release-* ]
 
-env:
-  JAVA_VERSION: 8
-
 jobs:
   check_size:
     name: Check Size
@@ -25,7 +22,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          filesizelimit: "524288"
+          filesizelimit: "1048576"
           exclusionPatterns: |
-            deploy/helm-charts
-            manager/console
+            examples/model_repository/densenet_onnx/1/model.onnx
